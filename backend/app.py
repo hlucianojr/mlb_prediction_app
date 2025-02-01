@@ -21,7 +21,8 @@ provider = BaseballDataProvider()
 
 @app.route('/', methods=['GET'])
 def home():
-    return "Select one of the following options: teams or prediction"
+        return """Select one of the following options: teams or prediction
+    team_roster?team_id=119&season=2025"""
 
 @app.route('/predict', methods=['GET'])
 def predict():
@@ -60,15 +61,29 @@ def logo():
 
 @app.route('/team_roster', methods=['GET'])
 def team_roster():
-    return provider.get_team_roster()
+    team_id = request.args.get('team_id')
+    if not team_id:
+        return jsonify({'error': 'No team name provided'}), 400
+    
+    season = request.args.get('season')
+    if not team_id:
+        return jsonify({'error': 'No season provided'}), 400
+    
+    return provider.get_team_roster(team_id,season)
 
 @app.route('/all_players_one_season', methods=['GET'])
 def all_players_one_season():
-    return provider.get_all_players_one_season()
+    season = request.args.get('season')
+    if not season:
+        return jsonify({'error': 'No season provided'}), 400
+    return provider.get_all_players_one_season(season)
 
 @app.route('/single_player', methods=['GET'])
 def single_player():
-    return provider.get_single_player()
+    player_id = request.args.get('player_id')
+    if not player_id:
+        return jsonify({'error': 'No season provided'}), 400
+    return provider.get_single_player(player_id)
 
 @app.route('/player_headshot', methods=['GET'])
 def player_headshot():

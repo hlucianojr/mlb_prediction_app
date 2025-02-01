@@ -1,15 +1,20 @@
-
 import pandas as pd
 import numpy as np
-# Pulling data from APIs, parsing JSON
-from prompt_toolkit import HTML
+from io import BytesIO
+import base64
 import requests
 import json
-from IPython.display import HTML, Image
 from flask import jsonify
+from IPython.display import HTML, Image
+# Pulling data from APIs, parsing JSON
+from prompt_toolkit import HTML
+from DisplayUtil import DisplayUtil
 
 # amazonq-ignore-next-line
 class BaseballDataProvider:
+    def __init__(self):
+        self.du = DisplayUtil()
+
     def get_all_baseball_leagues_level_competition(self):
         return jsonify({'message': 'Thank you'})
 
@@ -17,7 +22,7 @@ class BaseballDataProvider:
         sports_endpoint_url = 'https://statsapi.mlb.com/api/v1/sports'
 
         sports = process_endpoint_url(sports_endpoint_url, 'sports')
-        return display(sports)
+        return self.du.display(sports)
        
 
     def get_seasons(self):
@@ -25,7 +30,7 @@ class BaseballDataProvider:
 
         seasons = process_endpoint_url(seasons_endpoint_url, 'seasons')
 
-        return display(seasons)
+        return self.du.display(seasons)
 
     def get_teams(self):
         # Use "?sportId=1" in following URL for MLB only
@@ -33,20 +38,50 @@ class BaseballDataProvider:
 
         teams = process_endpoint_url(teams_endpoint_url, 'teams')
 
-        return display(teams)
+        return self.du.display(teams)
        
 
     def get_logo(self):
-        return jsonify({'message': 'Thank you'})
+        #@title Get Team Logo
 
-    def get_team_roster(self):
-        return jsonify({'message': 'Thank you'})
+        # Pick single team ID to get logo for (default is 119 for Dodgers)
+        team_id = 119 # @param {type:"integer"}
 
-    def get_all_players_one_season(self):
-        return jsonify({'message': 'Thank you'})
+        # Get team logo using team_id
+        team_logo_url = f'https://www.mlbstatic.com/team-logos/{team_id}.svg'
 
-    def get_single_player(self):
-        return jsonify({'message': 'Thank you'})
+        # Display team logo (can change size if desired)
+
+        return self.du.display(Image(url = team_logo_url, width=100, height=100))
+        
+
+    def get_team_roster(self, team_id:int, season:int):
+        # Pick single team ID to get roster for (default is 118 for Dodgers)
+        single_team_roster_url = f'https://statsapi.mlb.com/api/v1/teams/{team_id}/roster?season={season}'
+
+        single_team_roster = process_endpoint_url(single_team_roster_url, 'roster')
+
+        return self.du.display(single_team_roster)
+        
+    #@param {type:"integer"}
+    def get_all_players_one_season(self,season:int = 2024):
+
+        single_season_players_url = f'https://statsapi.mlb.com/api/v1/sports/1/players?season={season}'
+
+        players = process_endpoint_url(single_season_players_url, 'people')
+
+        return self.du.display(players)
+
+    #@title Single Player Information
+    # Pick single player ID to get info for (default is 660271 for Shohei Ohtani)
+    #@param {type:"integer"}
+    def get_single_player(self,player_id:int = 660271):
+      
+        single_player_url = f'https://statsapi.mlb.com/api/v1/people/{player_id}/'
+
+        single_player_info_json = json.loads(requests.get(single_player_url).content)
+
+        return self.du.display(single_player_info_json)
 
     def get_player_headshot(self):
         return jsonify({'message': 'Thank you'})
@@ -155,40 +190,4 @@ def process_endpoint_url(endpoint_url, pop_key=None):
 
   return df_result
 
-def display(df):
-    if isinstance(df, pd.DataFrame):
-        # Basic CSS styling
-        style = """
-        <style>
-            .table {
-                width: 100%;
-                margin-bottom: 1rem;
-                color: #212529;
-                border-collapse: collapse;
-            }
-            .table-striped tbody tr:nth-of-type(odd) {
-                background-color: rgba(0,0,0,.05);
-            }
-            .table-bordered {
-                border: 1px solid #dee2e6;
-            }
-            .table th, .table td {
-                padding: 0.75rem;
-                border: 1px solid #dee2e6;
-            }
-            .table thead th {
-                background-color: #f8f9fa;
-                border-bottom: 2px solid #dee2e6;
-            }
-        </style>
-        """
-        
-        html_table = df.to_html(
-            classes='table table-striped table-bordered',
-            index=False,
-            float_format=lambda x: '{:.2f}'.format(x) if isinstance(x, float) else x
-        )
-        return style + html_table
-    else:
-        return "<p>Not a valid DataFrame</p>"
-
+                        
