@@ -1,9 +1,5 @@
-import pandas as pd
-import numpy as np
 
-# Pulling data from APIs, parsing JSON
-import requests
-import json
+
 
 # Interfacing w/ Cloud Storage from Python
 from google.cloud import storage
@@ -92,11 +88,18 @@ def single_play_info():
 
 @app.route('/mlb_fil_room_video_link', methods=['GET'])
 def mlb_fil_room_video_link():
-    return provider.get_mlb_fil_room_video_link()
+    game_pk = request.args.get('game_pk')
+    if not game_pk:
+        return jsonify({'error': 'No game_pk provided'}), 400
+    return provider.get_mlb_fil_room_video_link(game_pk)
 
 @app.route('/mlb_home_run_data', methods=['GET'])
 def mlb_home_run_data():
-    return provider.get_mlb_home_run_data()
+    hr_play_id = request.args.get('hr_play_id')
+    if not hr_play_id:
+        return jsonify({'error': 'No hr_play_id provided'}), 400
+    
+    return provider.get_mlb_home_run_data(hr_play_id)
 
 @app.route('/single_home_run_video', methods=['GET'])
 def single_home_run_video():
@@ -117,28 +120,4 @@ def mlb_fan_content_int_data():
 if __name__ == '__main__':
     app.run()
 
-#@title Function to Process Results from Various MLB Stats API Endpoints
-def process_endpoint_url(endpoint_url, pop_key=None):
-  """
-  Fetches data from a URL, parses JSON, and optionally pops a key.
-
-  Args:
-    endpoint_url: The URL to fetch data from.
-    pop_key: The key to pop from the JSON data (optional, defaults to None).
-
-  Returns:
-    A pandas DataFrame containing the processed data
-  """
-  json_result = requests.get(endpoint_url).content
-
-  data = json.loads(json_result)
-
-   # if pop_key is provided, pop key and normalize nested fields
-  if pop_key:
-    df_result = pd.json_normalize(data.pop(pop_key), sep = '_')
-  # if pop_key is not provided, normalize entire json
-  else:
-    df_result = pd.json_normalize(data)
-
-  return df_result
 
