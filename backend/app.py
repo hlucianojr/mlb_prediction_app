@@ -30,7 +30,7 @@ def predict():
     generator = HTMLGenerator()
     return generator.generate_html("https://statsapi.mlb.com/api/v1/sports");
     # r eturn jsonify({'message': 'Prediction logic not implemented yet.'})
-
+#Done
 @app.route('/team', methods=['GET'])
 def get_team():
     teamname = request.args.get('teamname')
@@ -38,27 +38,30 @@ def get_team():
         return jsonify({'error': 'No team name provided'}), 400
     
     return jsonify({'teamname': teamname})
-
+#Done
 @app.route('/all_baseball_leagues_level_competition', methods=['GET'])
 def all_baseball_leagues_level_competition():
     return provider.get_all_baseball_leagues_level_competition()
-
+#Done
 @app.route('/leagues', methods=['GET'])
 def leagues():
     return provider.get_leagues()
-
+#Done
 @app.route('/seasons', methods=['GET'])
 def seasons():
     return provider.get_seasons()
-
+#Done
 @app.route('/teams', methods=['GET'])
 def teams():
     return provider.get_teams()
-
+#Done
 @app.route('/logo', methods=['GET'])
 def logo():
-    return provider.get_logo()
-
+    team_id = request.args.get('team_id')
+    if not team_id:
+        return jsonify({'error': 'No team name provided'}), 400
+    return provider.get_logo(team_id)
+#done
 @app.route('/team_roster', methods=['GET'])
 def team_roster():
     team_id = request.args.get('team_id')
@@ -87,7 +90,10 @@ def single_player():
 
 @app.route('/player_headshot', methods=['GET'])
 def player_headshot():
-    return provider.get_player_headshot()
+    player_id = request.args.get('player_id')
+    if not player_id:
+        return jsonify({'error': 'No season provided'}), 400
+    return provider.get_player_headshot(player_id)
 
 @app.route('/game_schedule', methods=['GET'])
 def game_schedule():
@@ -99,7 +105,15 @@ def single_game_data():
 
 @app.route('/single_play_info', methods=['GET'])
 def single_play_info():
-    return provider.single_play_info()
+    player_id = request.args.get('player_id')
+    year = request.args.get('year')
+    if not player_id:
+        return jsonify({'error': 'No season provided'}), 400
+    if not year:
+        return jsonify({'error': 'No season provided'}), 400
+    pstas = provider.player_stats(player_id, year)  
+    return pstas; 
+    #r eturn provider.single_play_info()
 
 @app.route('/mlb_fil_room_video_link', methods=['GET'])
 def mlb_fil_room_video_link():

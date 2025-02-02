@@ -8,6 +8,7 @@ from flask import jsonify
 from IPython.display import HTML, Image
 # Pulling data from APIs, parsing JSON
 from prompt_toolkit import HTML
+import statsapi
 from DisplayUtil import DisplayUtil
 
 # amazonq-ignore-next-line
@@ -20,41 +21,31 @@ class BaseballDataProvider:
 
     def get_leagues(self):
         sports_endpoint_url = 'https://statsapi.mlb.com/api/v1/sports'
-
         sports = process_endpoint_url(sports_endpoint_url, 'sports')
         return self.du.display(sports)
        
 
     def get_seasons(self):
         seasons_endpoint_url = 'https://statsapi.mlb.com/api/v1/seasons/all?sportId=1'
-
         seasons = process_endpoint_url(seasons_endpoint_url, 'seasons')
-
         return self.du.display(seasons)
 
     def get_teams(self):
         # Use "?sportId=1" in following URL for MLB only
         teams_endpoint_url = 'https://statsapi.mlb.com/api/v1/teams?sportId=1'
-
         teams = process_endpoint_url(teams_endpoint_url, 'teams')
-
         return self.du.display(teams)
        
-
-    def get_logo(self):
-        #@title Get Team Logo
-
-        # Pick single team ID to get logo for (default is 119 for Dodgers)
-        team_id = 119 # @param {type:"integer"}
-
+    #@title Get Team Logo
+    # Pick single team ID to get logo for (default is 119 for Dodgers)
+    def get_logo(self, team_id:int=119):
+        if not team_id:
+            return jsonify({'error': 'No team ID provided'}), 400
         # Get team logo using team_id
         team_logo_url = f'https://www.mlbstatic.com/team-logos/{team_id}.svg'
 
-        # Display team logo (can change size if desired)
-
         return self.du.display(Image(url = team_logo_url, width=100, height=100))
         
-
     def get_team_roster(self, team_id:int, season:int):
         # Pick single team ID to get roster for (default is 118 for Dodgers)
         single_team_roster_url = f'https://statsapi.mlb.com/api/v1/teams/{team_id}/roster?season={season}'
@@ -83,14 +74,25 @@ class BaseballDataProvider:
 
         return self.du.display(single_player_info_json)
 
-    def get_player_headshot(self):
-        return jsonify({'message': 'Thank you'})
+    def get_player_headshot(self,player_id:int = 660271):
+        #@title Get Player MLB.com Headshot
 
+        # Get current headshot for player using his player_id
+        player_current_headshot_url = f'https://securea.mlb.com/mlb/images/players/head_shot/{player_id}.jpg'
+
+        return self.du.display(Image(url = player_current_headshot_url , width=100, height=300))
+  
     def get_game_schedule(self):
         return jsonify({'message': 'Thank you'})
 
     def single_game_data(self):
-        return jsonify({'message': 'Thank you'})
+         #Pick gamePK of last game from games data as default
+        game_pk = games['gamePk'].iloc[-1]
+
+        single_game_feed_url = f'https://statsapi.mlb.com/api/v1.1/game/{game_pk}/feed/live'
+
+        single_game_info_json = json.loads(requests.get(single_game_feed_url).content)
+        return self.du.display(single_game_info_json)
 
     def single_play_info(self):
         return jsonify({'message': 'Thank you'})
@@ -156,14 +158,10 @@ class BaseballDataProvider:
     def get_single_home_run_video(self):
         return jsonify({'message': 'Thank you'})
 
-    #def get_mlb_fan_fav_data(self):
-    #    return jsonify({'message': 'Thank you'})
-
-    #def get_most_followed_mlb_player(self):
-    #    return jsonify({'message': 'Thank you'})
-
-    #def get_mlb_fan_content_int_data(self):
-    #    return jsonify({'message': 'Thank you'})
+ 
+    def player_stats(self,player_id:int=660271,year:int=2024):
+        stats = statsapi.get('people', {'personIds': player_id, 'season': year, 'hydrate': f'stats(group=[hitting,pitching,fielding],type=season,season={year})'})['people'][0]['stats']
+        return self.du.display(stats) 
     
 #@title Function to Process Results from Various MLB Stats API Endpoints
 def process_endpoint_url(endpoint_url, pop_key=None):
