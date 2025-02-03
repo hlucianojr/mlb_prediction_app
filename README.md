@@ -2,23 +2,27 @@
 
 This project aims to predict a prospect's MLB potential based on current performance and historical comparisons.
 
-## Project Structure
+You need an `GOOGLE_API_KEY` to run this code. Store them in a `.env` file in the root directory of the project, or set them as environment variables.
+
+
+If you are running the code on Apple Silicon, run the following command:
 
 ```
-mlb_prediction_app/
-├── frontend/
-├── backend/
-└── README.md
+$ brew install portaudio
 ```
 
-## Getting Started
+Create a virtual environment, update pip, and install the required packages:
 
-### Frontend
-- Navigate to the `frontend` directory to set up the React application.
+```
+$ python3 -m venv .venv
+$ source .venv/bin/activate
+$ python3 -m pip install -r requirements.txt
 
-### Backend
-- Navigate to the `backend` directory to set up the Python server.
+```
 
-## Features
-- Dashboard to view previous potential projections.
-- Ability to re-run predictions and view team and player details.
+Run the assistant:
+
+```
+$ python3 assistant.py
+```
+

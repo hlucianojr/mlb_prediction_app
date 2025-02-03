@@ -3,3 +3,15 @@ python-dotenv
 numpy
 pandas
 MLB-StatsAPI
+opencv-python
+langchain
+langchain-openai
+langchain_google_genai
+langchain-community
+python-dotenv
+pyaudio
+soundfile
+SpeechRecognition
+google-cloud-texttospeech
+git+https://github.com/openai/whisper.git
+pyobjc
